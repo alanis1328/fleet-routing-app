@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: fleet_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devpassword123
+      POSTGRES_DB: fleet_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
