@@ -1,20 +1,12 @@
-import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { pool } from './db';
+import { Router, Request, Response } from 'express';
+import { pool } from '../config/db';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+export const passengerRouter = Router();
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
-
-// Expresión regular: Valida números de teléfono (ej: +56912345678, 912345678)
 const PHONE_REGEX = /^(\+?56)?(\s?)(9\d{8}|\d{8,9})$/;
 
-// 1. Obtener todos los pasajeros activos
-app.get('/api/passengers', async (_req, res) => {
+// GET /api/passengers
+passengerRouter.get('/', async (_req: Request, res: Response) => {
   try {
     const query = `
       SELECT 
@@ -34,30 +26,28 @@ app.get('/api/passengers', async (_req, res) => {
     const { rows } = await pool.query(query);
     res.json(rows);
   } catch (error) {
-    console.error('Error al consultar la base de datos:', error);
+    console.error('Error al consultar pasajeros:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
-// 2. Guardar un nuevo pasajero con validaciones estrictas
-app.post('/api/passengers', async (req, res) => {
+// POST /api/passengers
+passengerRouter.post('/', async (req: Request, res: Response) => {
   const { first_name, last_name, guardian_name, guardian_phone, address, latitude, longitude } = req.body;
 
   if (!first_name || !last_name || !address || latitude === undefined || longitude === undefined) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
 
-  // Validación de teléfono
   const cleanPhone = (guardian_phone || '').trim();
   if (cleanPhone && !PHONE_REGEX.test(cleanPhone)) {
-    return res.status(400).json({ error: 'El teléfono debe contener solo dígitos válidos (ej: +56912345678).' });
+    return res.status(400).json({ error: 'Número de teléfono no válido' });
   }
 
-  // Validación de coordenadas geográficas válidas
-  const latNum = parseFloat(latitude);
-  const lngNum = parseFloat(longitude);
-  if (isNaN(latNum) || isNaN(lngNum) || latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
-    return res.status(400).json({ error: 'Las coordenadas ingresadas no son válidas.' });
+  const lat = parseFloat(latitude);
+  const lng = parseFloat(longitude);
+  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return res.status(400).json({ error: 'Coordenadas no válidas' });
   }
 
   try {
@@ -80,8 +70,8 @@ app.post('/api/passengers', async (req, res) => {
       (guardian_name || 'No especificado').trim(),
       cleanPhone || 'Sin teléfono',
       address.trim(),
-      lngNum,
-      latNum
+      lng,
+      lat
     ];
 
     const { rows } = await pool.query(query, values);
@@ -92,20 +82,20 @@ app.post('/api/passengers', async (req, res) => {
   }
 });
 
-// 3. Modificar datos de un pasajero
-app.put('/api/passengers/:id', async (req, res) => {
+// PUT /api/passengers/:id
+passengerRouter.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const { first_name, last_name, guardian_name, guardian_phone, address, latitude, longitude } = req.body;
 
   const cleanPhone = (guardian_phone || '').trim();
   if (cleanPhone && !PHONE_REGEX.test(cleanPhone)) {
-    return res.status(400).json({ error: 'El teléfono debe contener solo números válidos.' });
+    return res.status(400).json({ error: 'Número de teléfono no válido' });
   }
 
-  const latNum = parseFloat(latitude);
-  const lngNum = parseFloat(longitude);
-  if (isNaN(latNum) || isNaN(lngNum) || latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
-    return res.status(400).json({ error: 'Las coordenadas ingresadas no son válidas.' });
+  const lat = parseFloat(latitude);
+  const lng = parseFloat(longitude);
+  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return res.status(400).json({ error: 'Coordenadas no válidas' });
   }
 
   try {
@@ -125,13 +115,21 @@ app.put('/api/passengers/:id', async (req, res) => {
         ST_Y(location::geometry) AS latitude,
         active;
     `;
-    const values = [first_name.trim(), last_name.trim(), guardian_name.trim(), cleanPhone, address.trim(), lngNum, latNum, id];
+    const values = [
+      first_name.trim(),
+      last_name.trim(),
+      guardian_name.trim(),
+      cleanPhone,
+      address.trim(),
+      lng,
+      lat,
+      id
+    ];
     const { rows } = await pool.query(query, values);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Pasajero no encontrado' });
     }
-
     res.json(rows[0]);
   } catch (error) {
     console.error('Error al actualizar pasajero:', error);
@@ -139,21 +137,17 @@ app.put('/api/passengers/:id', async (req, res) => {
   }
 });
 
-// 4. Eliminar pasajero
-app.delete('/api/passengers/:id', async (req, res) => {
+// DELETE /api/passengers/:id
+passengerRouter.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const result = await pool.query('DELETE FROM passengers WHERE id = $1', [id]);
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Pasajero no encontrado' });
     }
-    res.json({ message: 'Pasajero eliminado correctamente' });
+    res.json({ message: 'Pasajero eliminado' });
   } catch (error) {
     console.error('Error al eliminar pasajero:', error);
     res.status(500).json({ error: 'Error al eliminar pasajero' });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planificador de Rutas</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Barra lateral -->
+  <aside id="sidebar">
+    <div class="header">
+      <h1>Planificador de Rutas</h1>
+      <p>Gestión de alumnos y optimización de recorrido</p>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-route" id="btnShortestRoute">Ruta Más Corta</button>
+      <button class="btn btn-add" id="btnOpenAddModal">Agregar Persona</button>
+    </div>
+
+    <div id="routeSummary">
+      <div>⏱️ Tiempo estimado: <strong id="routeDuration">0 min</strong></div>
+      <div>📏 Distancia total: <strong id="routeDistance">0 km</strong></div>
+      <div style="font-size: 0.75rem; color: #6b21a8; margin-top: 4px;">*Ruta vial optimizada de punto a punto</div>
+    </div>
+
+    <div class="passenger-list" id="passengersContainer"></div>
+  </aside>
+
+  <!-- Mapa interactivo -->
+  <div id="map"></div>
+
+  <!-- Modal Flotante de Registro/Edición -->
+  <div class="modal-overlay" id="passengerModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Nuevo Alumno</h2>
+      <form id="passengerForm">
+        <input type="hidden" id="editPassengerId" />
+
+        <div style="display: flex; gap: 8px;">
+          <div class="form-group" style="flex: 1;">
+            <label>Nombres</label>
+            <input type="text" id="firstName" placeholder="Ej: Mateo" required />
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label>Apellidos</label>
+            <input type="text" id="lastName" placeholder="Ej: San Martín" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Dirección exacta</label>
+          <div class="address-wrapper">
+            <input type="text" id="address" placeholder="Ej: Barros Arana 650" required />
+            <button type="button" class="btn-verify" id="btnSearchAddress">Buscar</button>
+          </div>
+          <span id="addressStatus" class="status-text"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Nombre del Apoderado</label>
+          <input type="text" id="guardianName" placeholder="Ej: Valeria Torres" required />
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono Apoderado (solo números)</label>
+          <input 
+            type="tel" 
+            id="guardianPhone" 
+            placeholder="Ej: +56912345678" 
+            pattern="^(\+?56)?(\s?)(9\d{8}|\d{8,9})$" 
+            title="Ingresa solo números de teléfono (ej: +56912345678 o 912345678)"
+            required 
+          />
+        </div>
+
+        <input type="hidden" id="lat" required />
+        <input type="hidden" id="lng" required />
+
+        <div class="map-helper-box" id="coordsInfo">
+          📍 Haz clic en el mapa para marcar y cambiar la dirección exacta.
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-cancel" id="btnCancelModal">Cancelar</button>
+          <button type="submit" class="btn btn-add" id="saveBtn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts modulares -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/modal.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
