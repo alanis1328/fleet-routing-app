@@ -7,9 +7,18 @@ Esta aplicación permite registrar alumnos, ubicar sus domicilios en el mapa de 
 ### Requisitos Previos
 
 Antes de comenzar, asegúrate de tener instalado en tu equipo:
-* **Node.js** (versión 18 o superior) y **npm**.
-* **Git** para clonar el repositorio.
-* Una cuenta en **Supabase** (o una base de datos PostgreSQL con extensión PostGIS activa).
+- **Node.js** (versión 18 o superior) y **npm**.
+- **Git** para clonar el repositorio.
+- Una cuenta en **Supabase** (o una base de datos PostgreSQL con extensión PostGIS activa).
+
+---
+
+### Estructura del Proyecto
+
+El código está organizado de manera modular donde ningún archivo supera las 200 líneas:
+
+- **`src/` (Backend):** Servidor Express, configuración de base de datos (`config/db.ts`), endpoints REST (`routes/passengers.ts`) y punto de entrada (`server.ts`).
+- **`server/` (Frontend):** Vistas estáticas (`index.html`), diseño Rose Milk & Lavender (`css/styles.css`) y módulos JavaScript desacoplados (`js/api.js`, `js/map.js`, `js/modal.js`, `js/router.js`, `js/main.js`).
 
 ---
 
@@ -26,7 +35,7 @@ cd fleet-routing-app
 
 ### 2. Instalar Dependencias
 
-Instala todas las librerías necesarias del backend:
+Instala todas las librerías necesarias del proyecto:
 
 ```bash
 npm install
@@ -110,5 +119,5 @@ Abre tu navegador web e ingresa a:
    * La lista de alumnos se ordenará automáticamente como `Parada #1`, `Parada #2`, etc.
 
 #### Editar o Eliminar Alumnos
-* **Editar:** Haz clic en **Editar** en la tarjeta del alumno para modificar sus datos o reubicar su punto en el mapa.
-* **Eliminar:** Haz clic en **Eliminar** para darlo de baja; el mapa y la base de datos se actualizarán de inmediato.
+- **Editar:** Haz clic en **Editar** en la tarjeta del alumno para modificar sus datos o reubicar su punto en el mapa.
+- **Eliminar:** Haz clic en **Eliminar** para darlo de baja; el mapa y la base de datos se actualizarán de inmediato.
